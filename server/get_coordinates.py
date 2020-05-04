@@ -188,7 +188,7 @@ def df_to_csv(list_of_demos, list_of_dfs):
     for i in range(len(list_of_demos)):
         for j in range(len(list_of_dfs)):
             if i == j:
-                list_of_dfs[j].to_csv('./csv/{}.csv'.format(list_of_demos[i]))
+                list_of_dfs[j].to_csv('../csv/{}.csv'.format(list_of_demos[i]))
 
 def all_processes(res):
     final_res = create_final_res(res)
@@ -212,10 +212,10 @@ t_round_end_msgs = [['#SFUI_Notice_Terrorists_Win'], ['#SFUI_Notice_Target_Bombe
 demos_list = []
 demos_names = []
 
-for file in os.listdir("./uploads"):
+for file in os.listdir("../uploads"):
     if file.endswith(".dem"):
         demos_names.append(os.path.splitext(file)[0])
-        demos_list.append(os.path.join("./uploads/", file))
+        demos_list.append(os.path.join("../uploads/", file))
 
 for demo in demos_list:
     result = []

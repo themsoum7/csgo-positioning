@@ -1,13 +1,11 @@
-import os
-import sys
 from flask import Flask, flash, request, redirect, url_for, render_template
-from werkzeug.utils import secure_filename
 from flask import send_from_directory
 from get_coordinates import *
+from werkzeug.utils import secure_filename
+
 from split_demos_to_images import *
 
-
-UPLOAD_FOLDER = './uploads'
+UPLOAD_FOLDER = '../uploads'
 ALLOWED_EXTENSIONS = {'dem'}
 
 app = Flask(__name__)
@@ -32,7 +30,6 @@ def upload_file():
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
-            print('here')
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             # checking if can demo be read
@@ -66,5 +63,5 @@ def res():
 @app.route('/demo_by_rounds')
 def demo_by_rounds():
     res_images()
-    for round_img in os.listdir("./images_by_rounds"):
-        return render_template('show_demo_by_rounds.html', image = "../images_by_rounds/" + round_img)
+    for round_img in os.listdir("../images_by_rounds"):
+        return render_template('show_demo_by_rounds.html', image = "../../images_by_rounds/" + round_img)

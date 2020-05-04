@@ -16,9 +16,9 @@ from matplotlib.patches import ConnectionPatch
 csv_list = []
 list_of_clear_csv = []
 
-for file in os.listdir("./csv"):
+for file in os.listdir("../csv"):
     if file.endswith(".csv"):
-        csv_list.append(os.path.join("./csv/", file))
+        csv_list.append(os.path.join("../csv/", file))
         list_of_clear_csv.append(os.path.splitext(file)[0])
 
 
@@ -37,7 +37,7 @@ def csvs_to_dfs(list_of_csv):
 # In[4]:
 
 
-im = plt.imread('./maps/de_dust2.png')
+im = plt.imread('../maps/de_dust2.png')
 
 
 # In[5]:
@@ -89,7 +89,7 @@ def plot_image_by_rounds(dataframe, idx, list_of_csv):
         ax.scatter(current_demo.vic_map_x, current_demo.vic_map_y, alpha = 1, c = 'r')
 
         ax.imshow(im)
-        plt.savefig('./images_by_rounds/{}_round_{}.jpg'.format(list_of_csv[idx], j + 1))
+        plt.savefig('../images_by_rounds/{}_round_{}.jpg'.format(list_of_csv[idx], j + 1))
         plt.clf()
 
 
