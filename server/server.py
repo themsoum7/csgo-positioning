@@ -1,16 +1,16 @@
 from flask import Flask, flash, request, redirect, url_for, render_template
 from flask import send_from_directory
-from get_coordinates import *
+from server.get_coordinates import *
 from werkzeug.utils import secure_filename
-
-from split_demos_to_images import *
+from server.split_demos_to_images import *
+import re
 
 UPLOAD_FOLDER = '../uploads'
 ALLOWED_EXTENSIONS = {'dem'}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 104857600
+app.config['MAX_CONTENT_LENGTH'] = 524288000
 
 
 def allowed_file(filename):
@@ -30,38 +30,87 @@ def upload_file():
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
+            for image in os.listdir('./static/images_by_rounds'):
+                if image.endswith(".jpg"):
+                    os.remove('./static/images_by_rounds/' + image)
+            for demo in os.listdir('../uploads'):
+                os.remove('../uploads/' + demo)
+            for csv in os.listdir('../csv'):
+                os.remove('../csv/' + csv)
+            for img in os.listdir('./static/image_ct_side'):
+                os.remove('./static/image_ct_side/' + img)
+            for img in os.listdir('./static/image_t_side'):
+                os.remove('./static/image_t_side/' + img)
+            for img in os.listdir('./static/image_team_one'):
+                os.remove('./static/image_team_one/' + img)
+            for img in os.listdir('./static/image_team_two'):
+                os.remove('./static/image_team_two/' + img)
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            # file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'demo.dem'))
             # checking if can demo be read
             # data = open('./uploads/' + filename, 'rb').read()
             # print('data: ', data[0])
-            return redirect(url_for('uploaded_file',
-                                    filename=filename))
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form method=post enctype=multipart/form-data>
-      <input type=file name=file>
-      <input type=submit value=Upload>
-    </form>
-    '''
+            #return redirect(url_for('uploaded_file', filename=filename))
+            return redirect('demo_by_rounds')
+    return render_template('upload.html')
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-@app.route('/test')
-def test(name = "Marc"):
-    return render_template('hello.html', name = name)
-
-@app.route('/result_list')
-def res():
-    result_list = all_processes(result)
-    return render_template('res_list_display.html', result_list = result_list)
-
 @app.route('/demo_by_rounds')
-def demo_by_rounds():
+def demo_dropdown():
+    def sort_nicely(l):
+        convert = lambda text: int(text) if text.isdigit() else text
+        alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+        l.sort(key = alphanum_key)
+        return l
+    get_coordinates()
     res_images()
-    for round_img in os.listdir("../images_by_rounds"):
-        return render_template('show_demo_by_rounds.html', image = "../../images_by_rounds/" + round_img)
+    round_numbers = return_rnd_numbers()
+    images_names = []
+
+    for file in os.listdir("./static/images_by_rounds"):
+        if file.endswith(".jpg"):
+            images_names.append(file)
+    # images_names = os.listdir("./images_by_rounds")
+    sorted_names = sort_nicely(images_names)
+    return render_template('demo_viewer.html', round_nums = round_numbers, images = sorted_names)
+
+@app.route('/demo_ct_side')
+def demo_ct_side():
+    image_name = "./static/image_ct_side/" + os.listdir("./static/image_ct_side")[0]
+    return render_template('demo_ct_side.html', image = image_name)
+
+@app.route('/demo_t_side')
+def demo_t_side():
+    image_name = "./static/image_t_side/" + os.listdir("./static/image_t_side")[0]
+    return render_template('demo_t_side.html', image = image_name)
+
+@app.route('/demo_team_one')
+def demo_team_one():
+    image_name = "./static/image_team_one/" + os.listdir("./static/image_team_one")[0]
+    return render_template('demo_team_one.html', image = image_name)
+
+@app.route('/demo_team_two')
+def demo_team_two():
+    image_name = "./static/image_team_two/" + os.listdir("./static/image_team_two")[0]
+    return render_template('demo_team_two.html', image = image_name)    
+
+@app.route('/demo_by_roundss')
+def demo_by_roundss():
+    def sort_nicely(l):
+        convert = lambda text: int(text) if text.isdigit() else text
+        alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+        l.sort(key = alphanum_key)
+        return l
+    round_numbers = return_rnd_numbers()
+    images_names = []
+
+    for file in os.listdir("./static/images_by_rounds"):
+        if file.endswith(".jpg"):
+            images_names.append(file)
+    # images_names = os.listdir("./images_by_rounds")
+    sorted_names = sort_nicely(images_names)
+    return render_template('demo_by_roundss.html', round_nums = round_numbers, images = sorted_names)

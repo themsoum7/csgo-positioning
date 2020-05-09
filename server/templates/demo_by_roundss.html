@@ -1,0 +1,38 @@
+<!doctype html>
+<title>Round Nums</title>
+
+<h3>Blue points are attackers and red are the victims in respective round</h3>
+<label>Choose round number:</label>
+<select name="round_numbers" id="round_numbers" onChange="imageUpdate();">
+<option>-</option>
+{% for image in images %}
+    {% set imageloop = loop %}
+    {% for round in round_nums %}
+        {% if imageloop.index == loop.index %}
+            <option value="{{ image }}">{{ round }}</option>
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+</select>
+
+<img class="round_image" style="width: 800px; display: block; margin: -38px auto;"/>
+
+<a href="http://127.0.0.1:5000">Check another demo</a>
+<a href="http://127.0.0.1:5000/demo_ct_side">Check this demo for CT side</a>
+<a href="http://127.0.0.1:5000/demo_t_side">Check this demo for T side</a>
+<a href="http://127.0.0.1:5000/demo_team_one">Check this demo for Team 1</a>
+<a href="http://127.0.0.1:5000/demo_team_two">Check this demo for Team 2</a>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+function imageUpdate() {
+    var image = $("select#round_numbers").val();
+    var path = './static/images_by_rounds/';
+    var src = $("img.round_image").attr({
+        src: path + image,
+        title: "Image",
+        alt: "Image"
+    });
+}
+</script>
+

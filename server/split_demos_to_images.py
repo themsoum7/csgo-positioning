@@ -1,46 +1,21 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
 
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 
-
-# In[2]:
-
-
-csv_list = []
-list_of_clear_csv = []
-
-for file in os.listdir("../csv"):
-    if file.endswith(".csv"):
-        csv_list.append(os.path.join("../csv/", file))
-        list_of_clear_csv.append(os.path.splitext(file)[0])
-
-
-# In[3]:
-
-
 def csvs_to_dfs(list_of_csv):
-    list_of_dfs = []
+    current_df = []
     
     for csv in list_of_csv:
         df = pd.read_csv(csv, index_col = 0)
-        list_of_dfs.append(df)
-    return list_of_dfs
+        current_df.append(df)
+    return current_df
 
-
-# In[4]:
-
-
-im = plt.imread('../maps/de_dust2.png')
-
-
-# In[5]:
+im = plt.imread('D:/csgo positioning/maps/de_dust2.png')
 
 
 # def plot_image(dataframe, idx, list_of_csv):
@@ -54,7 +29,6 @@ im = plt.imread('../maps/de_dust2.png')
 #     plt.savefig('./images/{}.jpg'.format(list_of_csv[idx]))
 #
 #
-# # In[6]:
 #
 #
 # def plot_image_with_lines(dataframe, idx, list_of_csv):
@@ -74,26 +48,41 @@ im = plt.imread('../maps/de_dust2.png')
 #
 #     ax.imshow(im)
 #
-#     plt.savefig('./images_with_lines/{}.jpg'.format(list_of_csv[idx]))
+#     plt.savefig('./images_by_sides/{}.jpg'.format(list_of_csv[idx]))
 #
 
-# In[7]:
 
+def plot_image_by_rounds(dataframe, csv_name):
+    last_idx = 0
 
-def plot_image_by_rounds(dataframe, idx, list_of_csv):
     for j in range(dataframe['round'].nunique()):
         fig, ax = plt.subplots(figsize = (20, 20))
-        current_demo = dataframe.loc[dataframe['round'] == j + 1]
-        
-        ax.scatter(current_demo.att_map_x, current_demo.att_map_y, alpha = 1, c = 'b')
-        ax.scatter(current_demo.vic_map_x, current_demo.vic_map_y, alpha = 1, c = 'r')
+        current_demo_round = dataframe.loc[dataframe['round'] == j + 1]
+
+        plt.title("Round outcome: " + current_demo_round.winner_team.to_list()[0], fontsize = 30)
+
+        ax.scatter(current_demo_round.att_map_x, current_demo_round.att_map_y, alpha = 1, c = 'b', s = 19**2, edgecolors='black')
+        ax.scatter(current_demo_round.vic_map_x, current_demo_round.vic_map_y, alpha = 1, c = 'r', s = 19**2, edgecolors='black')
+
+        for i in range(len(current_demo_round)):
+            xy_a = current_demo_round.att_map_x[i + last_idx], current_demo_round.att_map_y[i + last_idx] 
+            xy_b = current_demo_round.vic_map_x[i + last_idx], current_demo_round.vic_map_y[i + last_idx] 
+                
+            con = ConnectionPatch(xy_a, xy_b, coordsA = "data", coordsB = "data",
+                                    arrowstyle="-|>", shrinkA=5, shrinkB=5,
+                                    mutation_scale=20, fc="w")
+            ax.add_artist(con)
+
+        last_idx += len(current_demo_round)
 
         ax.imshow(im)
-        plt.savefig('../images_by_rounds/{}_round_{}.jpg'.format(list_of_csv[idx], j + 1))
-        plt.clf()
+
+        plt.savefig('./static/images_by_rounds/{}_round_{}.jpg'.format(csv_name, j + 1))
+        plt.close()
 
 
-# In[8]:
+def return_round_num(dataframe):
+    return dataframe['round'].unique().tolist()
 
 
 # def plot_image_by_sides(list_of_dfs, winner_side):
@@ -107,9 +96,102 @@ def plot_image_by_rounds(dataframe, idx, list_of_csv):
 #         ax.scatter(demo_by_side.vic_map_x, demo_by_side.vic_map_y, alpha = 1, c = 'r')
 #
 #         ax.imshow(im)
+
+
+def plot_ct_side(dataframe, ct_side, csv_name):
+    # plot images by sides NOT TEAMS
+    fig, ax = plt.subplots(figsize = (20, 20))
+
+    demo_by_side = dataframe.loc[dataframe['winner_team'] == ct_side]
+    plt.title('Demo plot for CT side for both teams', fontsize = 30)
+    ax.scatter(demo_by_side.att_map_x, demo_by_side.att_map_y, alpha = 1, c = 'b', s = 15**2, edgecolors='black')
+    ax.scatter(demo_by_side.vic_map_x, demo_by_side.vic_map_y, alpha = 1, c = 'r', s = 15**2, edgecolors='black')
+
+    for j in range(len(demo_by_side)):
+        xyA = demo_by_side.att_map_x.to_list()[j], demo_by_side.att_map_y.to_list()[j]
+        xyB = demo_by_side.vic_map_x.to_list()[j], demo_by_side.vic_map_y.to_list()[j]
+
+        con = ConnectionPatch(xyA, xyB, coordsA = "data", coordsB = "data",
+                              arrowstyle="-|>", shrinkA=5, shrinkB=5,
+                              mutation_scale=20, fc="w")
+        ax.add_artist(con)
+
+    ax.imshow(im)
+
+    plt.savefig('./static/image_ct_side/{}_ct_side.jpg'.format(csv_name))
+    plt.close()
+
+
+def plot_t_side(dataframe, t_side, csv_name):
+    # plot images by sides NOT TEAMS
+    fig, ax = plt.subplots(figsize = (20, 20))
+
+    demo_by_side = dataframe.loc[dataframe['winner_team'] == t_side]
+    plt.title('Demo plot for T side for both teams', fontsize = 30)
+    ax.scatter(demo_by_side.att_map_x, demo_by_side.att_map_y, alpha = 1, c = 'b', s = 15**2, edgecolors='black')
+    ax.scatter(demo_by_side.vic_map_x, demo_by_side.vic_map_y, alpha = 1, c = 'r', s = 15**2, edgecolors='black')
+
+    for j in range(len(demo_by_side)):
+        xyA = demo_by_side.att_map_x.to_list()[j], demo_by_side.att_map_y.to_list()[j]
+        xyB = demo_by_side.vic_map_x.to_list()[j], demo_by_side.vic_map_y.to_list()[j]
+
+        con = ConnectionPatch(xyA, xyB, coordsA = "data", coordsB = "data",
+                              arrowstyle="-|>", shrinkA=5, shrinkB=5,
+                              mutation_scale=20, fc="w")
+        ax.add_artist(con)
+
+    ax.imshow(im)
+
+    plt.savefig('./static/image_t_side/{}_t_side.jpg'.format(csv_name))
+    plt.close()
+
+
+def plot_image_by_team_one(dataframe, tm_one, csv_name):
+    fig, ax = plt.subplots(figsize = (20, 20))
+
+    demo_by_team_num = dataframe.loc[dataframe['team_num'] == tm_one]
+    plt.title('Demo plot for Team 1', fontsize = 30)
+    ax.scatter(demo_by_team_num.att_map_x, demo_by_team_num.att_map_y, alpha = 1, c = 'b', s = 15**2, edgecolors='black')
+    ax.scatter(demo_by_team_num.vic_map_x, demo_by_team_num.vic_map_y, alpha = 1, c = 'r', s = 15**2, edgecolors='black')
+
+    for j in range(len(demo_by_team_num)):
+        xyA = demo_by_team_num.att_map_x.to_list()[j], demo_by_team_num.att_map_y.to_list()[j]
+        xyB = demo_by_team_num.vic_map_x.to_list()[j], demo_by_team_num.vic_map_y.to_list()[j]
+
+        con = ConnectionPatch(xyA, xyB, coordsA = "data", coordsB = "data",
+                              arrowstyle="-|>", shrinkA=5, shrinkB=5,
+                              mutation_scale=20, fc="w")
+        ax.add_artist(con)
+
+    ax.imshow(im)
+
+    plt.savefig('./static/image_team_one/{}_team_one.jpg'.format(csv_name))
+    plt.close()
+
+
+def plot_image_by_team_two(dataframe, tm_two, csv_name):
+    fig, ax = plt.subplots(figsize = (20, 20))
+
+    demo_by_team_num = dataframe.loc[dataframe['team_num'] == tm_two]
+    plt.title('Demo plot for Team 2', fontsize = 30)
+    ax.scatter(demo_by_team_num.att_map_x, demo_by_team_num.att_map_y, alpha = 1, c = 'b', s = 15**2, edgecolors='black')
+    ax.scatter(demo_by_team_num.vic_map_x, demo_by_team_num.vic_map_y, alpha = 1, c = 'r', s = 15**2, edgecolors='black')
+
+    for j in range(len(demo_by_team_num)):
+        xyA = demo_by_team_num.att_map_x.to_list()[j], demo_by_team_num.att_map_y.to_list()[j]
+        xyB = demo_by_team_num.vic_map_x.to_list()[j], demo_by_team_num.vic_map_y.to_list()[j]
+
+        con = ConnectionPatch(xyA, xyB, coordsA = "data", coordsB = "data",
+                              arrowstyle="-|>", shrinkA=5, shrinkB=5,
+                              mutation_scale=20, fc="w")
+        ax.add_artist(con)
+
+    ax.imshow(im)
+
+    plt.savefig('./static/image_team_two/{}_team_two.jpg'.format(csv_name))
+    plt.close()
 #
 #
-# # In[9]:
 #
 #
 # def plot_image_by_teams(list_of_dfs, tm_num):
@@ -124,7 +206,6 @@ def plot_image_by_rounds(dataframe, idx, list_of_csv):
 #         ax.imshow(im)
 #
 #
-# # In[10]:
 #
 #
 # def plot_image_all_matches(list_of_dfs):
@@ -139,36 +220,40 @@ def plot_image_by_rounds(dataframe, idx, list_of_csv):
 #
 #     ax.imshow(im)
 
+def return_rnd_numbers():
+    current_csv = []
 
-# In[11]:
+    for file in os.listdir("D:/csgo positioning/csv"):
+        if file.endswith(".csv"):
+            current_csv.append(os.path.join("D:/csgo positioning/csv/", file))
 
+    df = csvs_to_dfs(current_csv)
+    round_number = return_round_num(df[0])
+    return round_number
 
 def res_images():
-    dfs = csvs_to_dfs(csv_list)
+    current_csv = []
+    current_csv_name = []
+
+    for file in os.listdir("D:/csgo positioning/csv"):
+        if file.endswith(".csv"):
+            current_csv.append(os.path.join("D:/csgo positioning/csv/", file))
+            current_csv_name.append(os.path.splitext(file)[0])
+
+    df = csvs_to_dfs(current_csv)
     cts_win = 'CTs win'
     ts_win = 'Ts win'
     team_one = 'Team 1'
     team_two = 'Team 2'
 
-    for i in range(len(dfs)):
-        df = dfs[i]
-        plot_image_by_rounds(df, i, list_of_clear_csv)
-        # plot_image(df, i, list_of_clear_csv)
-        # plot_image_with_lines(df, i, list_of_clear_csv)
-        # plot_image_all_matches(dfs)
-        # plot_image_by_sides(dfs, cts_win)
-        # plot_image_by_sides(dfs, ts_win)
-        # plot_image_by_teams(dfs, team_one)
-        # plot_image_by_teams(dfs, team_two)
-
-# In[12]:
-
-
-
-
-
-# In[ ]:
-
-
-
-
+    plot_image_by_rounds(df[0], current_csv_name[0])
+    # plot_image(df, i, list_of_clear_csv)
+    # plot_image_with_lines(df, i, list_of_clear_csv)
+    # plot_image_all_matches(dfs)
+    plot_ct_side(df[0], cts_win, current_csv_name[0])
+    plot_t_side(df[0], ts_win, current_csv_name[0])
+    plot_image_by_team_one(df[0], team_one, current_csv_name[0])
+    plot_image_by_team_two(df[0], team_two, current_csv_name[0])
+    # plot_image_by_sides(df[0], ts_win)
+    # plot_image_by_teams(dfs, team_one)
+    # plot_image_by_teams(dfs, team_two)
