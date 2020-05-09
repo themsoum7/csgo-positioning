@@ -1,5 +1,10 @@
 # csgo-positioning
 
-Link to Astralis vs Faze demo: https://drive.google.com/open?id=1D1PwqIUxhkOXA-c9y71_l0fd0R2zKIRQ
-
-You have to put all demos to "data" folder
+## How to run?
+1. Go into `server` folder 
+2. Run cmd  
+3. Run these commands 
+   * `set FLASK_APP=server.py`
+   * `flask run`
+4. Go to http://127.0.0.1:5000
+5. You're done
