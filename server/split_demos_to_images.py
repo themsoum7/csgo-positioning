@@ -15,7 +15,7 @@ def csvs_to_dfs(list_of_csv):
         current_df.append(df)
     return current_df
 
-im = plt.imread('D:/csgo positioning/maps/de_dust2.png')
+im = plt.imread('../maps/de_dust2.png')
 
 
 # def plot_image(dataframe, idx, list_of_csv):
@@ -223,9 +223,9 @@ def plot_image_by_team_two(dataframe, tm_two, csv_name):
 def return_rnd_numbers():
     current_csv = []
 
-    for file in os.listdir("D:/csgo positioning/csv"):
+    for file in os.listdir("../csv"):
         if file.endswith(".csv"):
-            current_csv.append(os.path.join("D:/csgo positioning/csv/", file))
+            current_csv.append(os.path.join("../csv/", file))
 
     df = csvs_to_dfs(current_csv)
     round_number = return_round_num(df[0])
@@ -235,9 +235,9 @@ def res_images():
     current_csv = []
     current_csv_name = []
 
-    for file in os.listdir("D:/csgo positioning/csv"):
+    for file in os.listdir("../csv"):
         if file.endswith(".csv"):
-            current_csv.append(os.path.join("D:/csgo positioning/csv/", file))
+            current_csv.append(os.path.join("../csv/", file))
             current_csv_name.append(os.path.splitext(file)[0])
 
     df = csvs_to_dfs(current_csv)

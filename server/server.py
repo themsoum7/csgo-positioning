@@ -3,6 +3,8 @@ from flask import send_from_directory
 from server.get_coordinates import *
 from werkzeug.utils import secure_filename
 from server.split_demos_to_images import *
+from server.economy_research import *
+from server.economy_to_plot import *
 import re
 
 UPLOAD_FOLDER = '../uploads'
@@ -30,13 +32,15 @@ def upload_file():
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
-            for image in os.listdir('./static/images_by_rounds'):
-                if image.endswith(".jpg"):
-                    os.remove('./static/images_by_rounds/' + image)
             for demo in os.listdir('../uploads'):
                 os.remove('../uploads/' + demo)
             for csv in os.listdir('../csv'):
                 os.remove('../csv/' + csv)
+            for csv in os.listdir('../economy_csv'):
+                os.remove('../economy_csv/' + csv)
+            for image in os.listdir('./static/images_by_rounds'):
+                if image.endswith(".jpg"):
+                    os.remove('./static/images_by_rounds/' + image)
             for img in os.listdir('./static/image_ct_side'):
                 os.remove('./static/image_ct_side/' + img)
             for img in os.listdir('./static/image_t_side'):
@@ -45,6 +49,10 @@ def upload_file():
                 os.remove('./static/image_team_one/' + img)
             for img in os.listdir('./static/image_team_two'):
                 os.remove('./static/image_team_two/' + img)
+            for img in os.listdir('./static/ct_economy_plot'):
+                os.remove('./static/ct_economy_plot/' + img)
+            for img in os.listdir('./static/t_economy_plot'):
+                os.remove('./static/t_economy_plot/' + img)
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             # file.save(os.path.join(app.config['UPLOAD_FOLDER'], 'demo.dem'))
@@ -67,7 +75,9 @@ def demo_dropdown():
         l.sort(key = alphanum_key)
         return l
     get_coordinates()
+    economy_res()
     res_images()
+    economy_images()
     round_numbers = return_rnd_numbers()
     images_names = []
 
@@ -114,3 +124,16 @@ def demo_by_roundss():
     # images_names = os.listdir("./images_by_rounds")
     sorted_names = sort_nicely(images_names)
     return render_template('demo_by_roundss.html', round_nums = round_numbers, images = sorted_names)
+
+@app.route('/ct_economy')
+def ct_economy():
+    image_name = "./static/ct_economy_plot/" + os.listdir("./static/ct_economy_plot")[0]
+    return render_template('ct_economy_plot.html', image = image_name)
+
+@app.route('/t_economy')
+def t_economy():
+    image_name = "./static/t_economy_plot/" + os.listdir("./static/t_economy_plot")[0]
+    return render_template('t_economy_plot.html', image = image_name)
+
+# if __name__ == "__main__":
+#     app.run(host="0.0.0.0", port=8000)

@@ -1,6 +1,7 @@
 from demoparser.demofile import DemoFile
 import pandas as pd
 import os
+
 def get_coordinates():
     def m_start(event, msg):
         result.append("Match start")
@@ -217,7 +218,7 @@ def get_coordinates():
         all_demos_result.append(final_res)
         new_dff = convert_data(df, current_df, rounds_list, winner_list, teams_list)
         df_to_csv(current_df, clear_demos_list)
-
+        
         return all_demos_result
 
     all_demos_result = []
@@ -228,9 +229,9 @@ def get_coordinates():
     demos_list = []
     clear_demos_list = []
 
-    for file in os.listdir("D:/csgo positioning/uploads"):
+    for file in os.listdir("../uploads"):
         if file.endswith(".dem"):
-            demos_list.append(os.path.join("D:/csgo positioning/uploads/", file))
+            demos_list.append(os.path.join("../uploads/", file))
             clear_demos_list.append(os.path.splitext(file)[0])
 
     for demo in demos_list:
@@ -243,4 +244,5 @@ def get_coordinates():
         d.add_callback('player_death', death)
         d.add_callback('round_end', r_end)
         d.parse()
-        all_processes(result)
+        res = all_processes(result)
+    return res
