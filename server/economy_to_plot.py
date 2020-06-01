@@ -18,6 +18,7 @@ def plot_t_economy(dataframe, csv_name):
     plt.ylabel("Buy Level", labelpad=15)
     plt.title("T economy level by rounds", y=1.02, fontsize=22)
     plt.xticks(dataframe['round'].unique(), rotation=90)
+    plt.yticks([0, 1, 2, 3, 4, 5])
     plt.savefig('./static/t_economy_plot/{}_t_economy.jpg'.format(csv_name))
     plt.close()
 
@@ -29,15 +30,16 @@ def plot_ct_economy(dataframe, csv_name):
     plt.ylabel("Buy Level", labelpad=15)
     plt.title("CT economy level by rounds", y=1.02, fontsize=22)
     plt.xticks(dataframe['round'].unique(), rotation=90)
+    plt.yticks([0, 1, 2, 3, 4, 5])
     plt.savefig('./static/ct_economy_plot/{}_ct_economy.jpg'.format(csv_name))
     plt.close()
 
 def economy_images():
     current_csv = []
     current_csv_name = []
-    for file in os.listdir("../economy_csv"):
+    for file in os.listdir("../csv"):
         if file.endswith(".csv"):
-            current_csv.append(os.path.join("../economy_csv/", file))
+            current_csv.append(os.path.join("../csv/", file))
             current_csv_name.append(os.path.splitext(file)[0])
 
     df = csvs_to_dfs(current_csv)

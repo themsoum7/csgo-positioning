@@ -3,7 +3,6 @@ from flask import send_from_directory
 from server.get_coordinates import *
 from werkzeug.utils import secure_filename
 from server.split_demos_to_images import *
-from server.economy_research import *
 from server.economy_to_plot import *
 import re
 
@@ -36,8 +35,6 @@ def upload_file():
                 os.remove('../uploads/' + demo)
             for csv in os.listdir('../csv'):
                 os.remove('../csv/' + csv)
-            for csv in os.listdir('../economy_csv'):
-                os.remove('../economy_csv/' + csv)
             for image in os.listdir('./static/images_by_rounds'):
                 if image.endswith(".jpg"):
                     os.remove('./static/images_by_rounds/' + image)
@@ -75,7 +72,6 @@ def demo_dropdown():
         l.sort(key = alphanum_key)
         return l
     get_coordinates()
-    economy_res()
     res_images()
     economy_images()
     round_numbers = return_rnd_numbers()

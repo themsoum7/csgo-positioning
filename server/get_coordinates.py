@@ -65,7 +65,7 @@ def get_coordinates():
             elif new_res_list[i] in t_round_end_msgs:
                 new_res_list[i] = [{"Round msg": new_res_list[i][0], "round num": counter, "winner team": "Ts win"}]
                 counter += 1
-
+    
         return new_res_list
 
     def remove_trash(new_res_list):
@@ -75,7 +75,7 @@ def get_coordinates():
         return new_res_list
 
 
-    def create_lists(new_res_list, att_list, vic_list, r_list, wnr_list, tms_list):
+    def create_lists(new_res_list, att_list, vic_list, r_list, wnr_list, tms_list, cts_lvl_list, ts_lvl_list):
         round_counter = 1
         kill_counter = 0
         kills_counter = []
@@ -85,6 +85,8 @@ def get_coordinates():
         rnd_cntr = 1
         team_one = ""
         team_two = ""
+        cts_final_lvls = []
+        ts_final_lvls = []
 
         for el in new_res_list:
             if len(el) == 1:
@@ -92,6 +94,8 @@ def get_coordinates():
                 kills_counter.append(kill_counter)
                 kill_counter = 0
                 wnr_list.append(el[0].get("winner team", ""))
+                cts_lvl_list.append(el[0].get("ct buy level", ""))
+                ts_lvl_list.append(el[0].get("t buy level", ""))
             else:
                 att_list.append(el[0])
                 vic_list.append(el[1])
@@ -124,9 +128,11 @@ def get_coordinates():
             for i in range(el):
                 final_team_list.append(tms_list[idx])
                 final_winner_list.append(wnr_list[idx])
+                cts_final_lvls.append(cts_lvl_list[idx])
+                ts_final_lvls.append(ts_lvl_list[idx])
             idx += 1
 
-        return att_list, vic_list, r_list, final_winner_list, final_team_list
+        return att_list, vic_list, r_list, final_winner_list, final_team_list, cts_final_lvls, ts_final_lvls
 
 
     def split_x_y_z(att_or_vic_list, att_or_vic_x, att_or_vic_y, att_or_vic_z):
@@ -185,7 +191,7 @@ def get_coordinates():
     #
     #     return list_of_dfs
 
-    def convert_data(dataframe, actual_df, rnds, wnrs, tms):
+    def convert_data(dataframe, actual_df, rnds, wnrs, tms, cts_lvls, t_lvls):
         new_df = pd.DataFrame()
         # Convert the data to radar positions
         new_df['att_map_x'] = dataframe['attacker_x'].apply(pointx_to_resolutionx)
@@ -195,6 +201,8 @@ def get_coordinates():
         new_df['round'] = rnds
         new_df['winner_team'] = wnrs
         new_df['team_num'] = tms
+        new_df['t_buy_level'] = t_lvls
+        new_df['ct_buy_level'] = cts_lvls
         actual_df.append(new_df)
 
         return actual_df
@@ -208,15 +216,140 @@ def get_coordinates():
     def df_to_csv(actual_df, actual_clear_df):
         actual_df[0].to_csv('../csv/{}.csv'.format(actual_clear_df[0]))
 
+    def economy(dataframe, res_list):
+        t_buy_level = 0
+        ct_buy_level = 0
+        counter = 1
+        win_streak = 0
+        prev_winner = ''
+
+        for i in range(len(res_list)):
+            if len(res_list[i]) == 1:
+                rnd_winner = res_list[i][0].get("winner team")
+                if counter == 1 or counter == 16:
+                    win_streak = 0
+                    if rnd_winner:
+                        win_streak += 1
+                    ct_buy_level = 1
+                    t_buy_level = 1
+
+                if counter == 2 or counter == 17:
+                    if rnd_winner == "CTs win":
+                        if rnd_winner == prev_winner:
+                            win_streak += 1
+                            ct_buy_level = 2.5
+                            t_buy_level = 1.5
+                        else:
+                            win_streak = 1
+                            ct_buy_level = 1.5
+                            t_buy_level = 2.5
+                    else:
+                        if rnd_winner == prev_winner:
+                            win_streak += 1
+                            ct_buy_level = 1.5
+                            t_buy_level = 2.5
+                        else:
+                            win_streak = 1
+                            ct_buy_level = 2.5
+                            t_buy_level = 1.5
+                        
+                if counter == 3 or counter == 18:
+                    if rnd_winner == "Ts win":
+                        if rnd_winner == prev_winner:
+                            win_streak += 1
+                            ct_buy_level = 1.5
+                            t_buy_level = 2.7
+                        else:
+                            win_streak = 1
+                            ct_buy_level = 2.7
+                            t_buy_level = 1.5
+                    else:
+                        if rnd_winner == prev_winner:
+                            win_streak += 1
+                            ct_buy_level = 2.7
+                            t_buy_level = 1.5
+                        else:
+                            win_streak = 1
+                            ct_buy_level = 1.5
+                            t_buy_level = 2.7
+
+                if 3 < counter <= 15 or 18 < counter <= 30:
+                    if rnd_winner == "CTs win":
+                        if rnd_winner != prev_winner:
+                            win_streak = 1
+                            # ct_buy_level += 0.2
+                            t_buy_level -= 0.5
+                        else:
+                            if win_streak > 4 and t_buy_level == 2.5:
+                                t_buy_level = 3
+                            elif win_streak > 4 and t_buy_level == 3:
+                                t_buy_level = 2.5
+                            else:
+                                win_streak += 1
+                                if win_streak >= 4:
+                                    ct_buy_level += 0.7
+                                    t_buy_level = 2.5
+                                else:
+                                    if win_streak > 1 and ct_buy_level < 3:
+                                        t_buy_level += 0.5
+                                    else:
+                                        ct_buy_level += 0.4
+                                        t_buy_level -= 0.5
+                                    if t_buy_level < 1:
+                                        t_buy_level = 1
+                                    
+                        if ct_buy_level > 5:
+                            ct_buy_level = 5
+                        if t_buy_level > 5:
+                            t_buy_level = 5
+                        
+                    elif rnd_winner == "Ts win":
+                        if rnd_winner != prev_winner:
+                            win_streak = 1
+                            ct_buy_level -= 0.8
+                            # t_buy_level += 0.5
+                        else:
+                            if win_streak > 4 and ct_buy_level == 2.5:
+                                ct_buy_level = 3
+                            elif win_streak > 4 and ct_buy_level == 3:
+                                ct_buy_level = 2.5
+                            else:
+                                win_streak += 1
+                                if win_streak >= 4:
+                                    ct_buy_level = 2.5
+                                    t_buy_level += 0.7
+                                else:
+                                    if win_streak > 1 and t_buy_level < 3:
+                                        ct_buy_level += 0.5
+                                    else:
+                                        ct_buy_level -= 0.4
+                                        t_buy_level += 0.4
+                                    if ct_buy_level < 1:
+                                        ct_buy_level = 1
+
+                        if ct_buy_level > 5:
+                            ct_buy_level = 5
+                        if t_buy_level > 5:
+                            t_buy_level = 5
+                res_list[i][0]["t buy level"] = round(t_buy_level, 1)
+                res_list[i][0]["ct buy level"] = round(ct_buy_level, 1)
+                res_list[i] = [res_list[i][0]]
+                # res_list[0][i] = [res_list[0][i][0], {"t buy level": round(t_buy_level, 1), "ct buy level": round(ct_buy_level, 1)}]
+                prev_winner = rnd_winner
+                counter += 1
+        
+        return res_list
+
     def all_processes(res):
         final_res = create_final_res(res)
-        attackers_list, victims_list, rounds_list, winner_list, teams_list = create_lists(final_res, attackers, victims,
-                                                                                          rounds, winners, teams)
+        new_final_res = economy(current_df, final_res)
+        attackers_list, victims_list, rounds_list, winner_list, teams_list, ct_lvls, t_lvls = create_lists(final_res, attackers, victims,
+                                                                                          rounds, winners, teams, ct_final_lvls, t_final_lvls)
         attackers_x, attackers_y, attackers_z = split_x_y_z(attackers, attacker_x, attacker_y, attacker_z)
         vitctims_x, victims_y, victims_z = split_x_y_z(victims, victim_x, victim_y, victim_z)
         df = create_df_from_res(attacker_x, attacker_y, attacker_z, victim_x, victim_y, victim_z, rounds_list, winner_list, teams_list)
-        all_demos_result.append(final_res)
-        new_dff = convert_data(df, current_df, rounds_list, winner_list, teams_list)
+        all_demos_result.append(new_final_res)
+        new_dff = convert_data(df, current_df, rounds_list, winner_list, teams_list, ct_lvls, t_lvls)
         df_to_csv(current_df, clear_demos_list)
         
         return all_demos_result
@@ -236,7 +369,7 @@ def get_coordinates():
 
     for demo in demos_list:
         result = []
-        attackers, victims, rounds, attacker_x, attacker_y, attacker_z, victim_x, victim_y, victim_z, winners, teams = [], [], [], [], [], [], [], [], [], [], []
+        attackers, victims, rounds, attacker_x, attacker_y, attacker_z, victim_x, victim_y, victim_z, winners, teams, ct_final_lvls, t_final_lvls = [], [], [], [], [], [], [], [], [], [], [], [], []
         data = open(demo, 'rb').read()
         d = DemoFile(data)
         d.add_callback('round_announce_match_start', m_start)
@@ -244,5 +377,5 @@ def get_coordinates():
         d.add_callback('player_death', death)
         d.add_callback('round_end', r_end)
         d.parse()
-        res = all_processes(result)
-    return res
+        data_res = all_processes(result)
+    return data_res
