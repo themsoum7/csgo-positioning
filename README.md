@@ -1,5 +1,7 @@
 # csgo-positioning
 
+###So far it only works with old de_dust 2 map.
+
 ## How to run?
 1. Go into `server` folder 
 2. Run cmd  
